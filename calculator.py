@@ -7,85 +7,83 @@ def main():
     ops = calc.operations
     paren = calc.parenthesis
 
-    '''
-  
-    '''
-    '''
-    print(f"paren = {paren}")
+    print(f'paren = {paren}')
     for i in paren:
         print(i, paren[i])
 
-    print(f"\nvars = {vars}")
+    print(f'\nvars = {vars}')
     for i in vars:
         print(i, vars[i])
 
-    print(f"\nops = {ops}")    
+    print(f'\nops = {ops}')    
     for i in ops:
         print(i, ops[i])
+
+    '''
+    
     '''
     
 
 class calculator:
     def __init__(self, expr=''):
-        if expr == '': expr = input ("Enter the operation: ")
+        if expr == '': expr = input ('Enter the operation: ')
         if expr == '': self.__init__()
 
         # Storing all variables, operations and parenthesis in order of appeareance
-        operators = {
-                    '*' : 1,
-                    '/' : 1,
-                    '+' : 2, 
-                    '-' : 2
-                    }
-        v = 0
-        o = 0
+        operators = {'*' : 1, '/' : 1, '+' : 2, '-' : 2}
         self._variables = {}
         self._operations = {}
         self._parenthesis = {}
         count_paren = {}
+        v = 0
+        o = 0
 
-        for c in expr:
-            if c.isdigit() or (c == '.'): 
-                print(f"c is {c} ")
-                self._variables[v] = self._variables.get(v, '') + c
-                if self._operations.get(o):
+        for i in range(len(expr)) :
+            if expr[i].isdigit() or (expr[i] == '.') : 
+                self._variables[v] = self._variables.get(v, '') + expr[i]
+                if self._operations.get(o) :
                     o +=1
-                print(f"self._variables is {self._variables}\n")
 
-            elif c in operators:
-                print(f"c is {c} ")
-                self._operations[o] = c
-                if self._variables.get(v):
+            elif expr[i] in operators :
+                self._operations[o] = expr[i]
+                if not self._variables.get(v) :
+                    print(f'Missing operand before operator "{expr[i]}" at position {i+1}\n')
+                    self.__init__()
+                else :
                     v +=1
-                print(f"self._operations is {self._operations}\n")
                 
 # PAY ATTENTION HEREEEE
-            elif c in ['(', ')']:
-                print(f"c is {c} ")
-                self._parenthesis[c] = {o: self._parenthesis.get(c, {}).get(o, 0)+1}
-                count_paren[c] = count_paren.get(c, 0) + 1
-                print(f"self._parenthesis is {self._parenthesis} ")
-                print(f"count_paren is {count_paren}\n")
+            elif expr[i] == '(' :
+                #self._parenthesis[expr[i]] = {o : self._parenthesis.get(expr[i], {}).get(o, 0) + 1}
+                count_paren[expr[i]] = count_paren.get(expr[i], 0) + 1
+
+            elif expr[i] == ')' :
+                #self._parenthesis[expr[i]] = {o : self._parenthesis.get(expr[i], {}).get(o, 0) + 1}
+                count_paren[expr[i]] = count_paren.get(expr[i], 0) + 1                
+
+            else :
+                print(f'Character "{expr[i]}" at position {i+1} is not understood by this calculator\n')
+                self.__init__()
 
     	# Error checking
-        if count_paren.get('(', 0) > count_paren.get(')', 0):
-            print('Missing closing parenthesis')
+        if count_paren.get('(', 0) > count_paren.get(')', 0) :
+            print('Missing closing parenthesis\n')
             self.__init__()
-        if count_paren.get('(', 0) < count_paren.get(')', 0):
-            print('Missing opening parenthesis')
+        if count_paren.get('(', 0) < count_paren.get(')', 0) :
+            print('Missing opening parenthesis\n')
             self.__init__()
-        if not len(self._variables) == len(self._operations)+1:
-            print('Operator without operand')
+        if not len(self._variables) == len(self._operations)+1 :
+            print('Operator without operand\n')
             self.__init__()
 
         # Convert stored variables to float
-        for i in self._variables:
-            try: self._variables[i] = float(self._variables[i])
-            except: continue
+        for i in self._variables :
+            try : self._variables[i] = float(self._variables[i])
+            except : continue
 
         # Perform calculations
         i = 0
-        while i < len(self._variables)-1:
+        while i < len(self._variables)-1 :
             result = self.calculate(self._variables[i], self._variables[i+1], self._operations[i])
             print(result)
             i +=1
@@ -115,6 +113,7 @@ class calculator:
     @parenthesis.setter
     def parenthesis(self, p):
         self._parenthesis = p
+
 
     def calculate(self, l, r, op):
         if op == '*':
@@ -187,9 +186,9 @@ if __name__ == '__main__':
 
 '''
 window = Tk()
-window.title("Hijueputa calculator")
+window.title('Hijueputa calculator')
 
-mainframe = ttk.Frame(window, padding="5 3 12 12")
+mainframe = ttk.Frame(window, padding='5 3 12 12')
 mainframe.grid(column=4, row=4, sticky=(N, W, E, S))
 window.columnconfigure(4, weight=1)
 window.rowconfigure(4, weight=1)
