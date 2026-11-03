@@ -1,205 +1,162 @@
-from tkinter import *
-from tkinter import ttk
-
-def main():
-    calc = calculator()
-    vars = calc.variables
-    ops = calc.operations
-    paren = calc.parenthesis
-
-    '''
-  
-    '''
-    '''
-    print(f"paren = {paren}")
-    for i in paren:
-        print(i, paren[i])
-
-    print(f"\nvars = {vars}")
-    for i in vars:
-        print(i, vars[i])
-
-    print(f"\nops = {ops}")    
-    for i in ops:
-        print(i, ops[i])
-    '''
+class Calculator:
+    operators_priority = {
+            '*' : 1,
+            '/' : 1,
+            '+' : 2, 
+            '-' : 2
+            }
     
+    def __init__(self):
+        self.expression = ""
+        self.variables = []
+        self.operations = []
+        self.parenthesis = [0, 0]
 
-class calculator:
-    def __init__(self, expr=''):
-        if expr == '': expr = input ("Enter the operation: ")
-        if expr == '': self.__init__()
+        while self._expression == "" :
+            try :
+                self.expression = input(".\n..\n...\nEnter the operation: ")
+            except KeyboardInterrupt :
+                print("Keyboard interrupt")
+                exit()
+            except : print("Looks like the setter failed, thus the parse")
 
-        # Storing all variables, operations and parenthesis in order of appeareance
-        operators = {
-                    '*' : 1,
-                    '/' : 1,
-                    '+' : 2, 
-                    '-' : 2
-                    }
-        v = 0
-        o = 0
-        self._variables = {}
-        self._operations = {}
-        self._parenthesis = {}
-        count_paren = {}
+        print("DEBUG - 26 - init - Expression has been evaluated correct. We move forward met the calculations.")
+        print(self)
+
+        self.__init__()
+
+    def __str__(self):
+        return str(self.calculate())
+
+    '''                                                                               ATTRIBUTES                                                                                    '''
+    @property   # Expression
+    def expression(self): return self._expression
+    @expression.setter
+    def expression(self, expr):
+        try:
+            self.parse(expr)
+            print("DEBUG - 41 - expression setter - 'try : parse()' successful")
+            self._expression = expr
+        except Exception as e :
+            print(f"DEBUG - 44 - expression setter - Exception: {e}")
+            self._expression = ""
+    '''                                                                               ATTRIBUTES                                                                                    '''
+
+
+    '''                                                                                 METHODS                                                                                     '''
+    def parse(self, expr: str = None) :                 # Storing all variables, operations and parenthesis in order of appeareance
+        print(f"DEBUG - 51 - parse() - Parsing '{expr}' ...")
+        if expr == "" : return
+
+        vars = []
+        ops = []
+        pars = [0, 0]
+        v = 0   # Variable ID 
+        o = 0   # Operator ID
 
         for c in expr:
-            if c.isdigit() or (c == '.'): 
-                print(f"c is {c} ")
-                self._variables[v] = self._variables.get(v, '') + c
-                if self._operations.get(o):
+            print(f"DEBUG - 61 - parse() - Parsing character '{c}' ...")
+            if c.isdigit() or c in '().' : 
+                print(f"DEBUG - 63 - parse() - '{c}' is digit")
+                try :           vars[v] = vars[v] + c
+                except:         vars.append(c)
+                if c == '(' :   pars[0] += 1
+                if c == ')' :
+                    pars[1] += 1
+                    if pars[1] > pars[0] :
+                        raise Exception("Closing parenthesis without opening.")
+            elif c in Calculator.operators_priority :
+                if pars[0] > pars[1] :
+                    vars[v] = vars[v] + c
+                else:
+                    ops.append(c)
                     o +=1
-                print(f"self._variables is {self._variables}\n")
-
-            elif c in operators:
-                print(f"c is {c} ")
-                self._operations[o] = c
-                if self._variables.get(v):
                     v +=1
-                print(f"self._operations is {self._operations}\n")
-                
-# PAY ATTENTION HEREEEE
-            elif c in ['(', ')']:
-                print(f"c is {c} ")
-                self._parenthesis[c] = {o: self._parenthesis.get(c, {}).get(o, 0)+1}
-                count_paren[c] = count_paren.get(c, 0) + 1
-                print(f"self._parenthesis is {self._parenthesis} ")
-                print(f"count_paren is {count_paren}\n")
 
-    	# Error checking
-        if count_paren.get('(', 0) > count_paren.get(')', 0):
-            print('Missing closing parenthesis')
-            self.__init__()
-        if count_paren.get('(', 0) < count_paren.get(')', 0):
+        # Error checking
+        if pars[0] > pars[1] :
+            print('Missing closing parenthesis ")"')
+            raise
+
+        if pars[0] < pars[1] :
             print('Missing opening parenthesis')
-            self.__init__()
-        if not len(self._variables) == len(self._operations)+1:
-            print('Operator without operand')
-            self.__init__()
+            raise
+
+        if not (0 < len(vars) == len(ops)+1):
+            print('Missing operator or operand')
+            raise
+
+        # Save parsed expresion as intance variables
+        if self.expression == "" :
+            print(f"DEBUG - 111 - parse() - self.expression == '' --> '{expr}'")
+            self.variables = vars
+            self.operations = ops
+            self.parenthesis = pars
+
+        return vars, ops, pars
+
+    def calculate(self, varsopspars = None):
+        if varsopspars == None : varsopspars = self.variables, self.operations, self.parenthesis
+        vars, ops, pars = varsopspars
 
         # Convert stored variables to float
-        for i in self._variables:
-            try: self._variables[i] = float(self._variables[i])
-            except: continue
+        for i in range(len(vars)) :
+            try: vars[i] = float(vars[i])
+            except:
+                print(f"DEBUG - 96 - calculate() - Cannot convert variable '{vars[i]}' to float.\nExiting in absence of further implementation")
+                print(f"\nNow we recurse: {self.vars[i]} -->  {self.vars[i][1:len(self.vars[i])-1]}")
+                exit()
+                # If the variable is a parenthesis expression
+                if self.vars[i][0] == '(' and self.vars[i][len(self.vars[i])-1] == ')': 
+                    print(f"\nNow we recurse: {self.vars[i]} -->  {self.vars[i][1:len(self.vars[i])-1]}")
+                    print(self.vars[i][1:len(self.vars[i])-1])
+                    # Substitute the variable for the result of its calculation
+                    #self._vars[i] = calculate(parse(self._vars[i][1:len(self._vars[i])-1]))
+                else:
+                    print(f"variable {i} is not a number or a parenthesis")
+                    quit()
 
-        # Perform calculations
-        i = 0
-        while i < len(self._variables)-1:
-            result = self.calculate(self._variables[i], self._variables[i+1], self._operations[i])
-            print(result)
-            i +=1
+        while len(vars) > 1 :
+            ops.pop(0)
+            vars[0] = vars[0]+vars.pop(1)
 
-        #self.__init__()
+        print("DEBUG - 126 - calculate() - Finishing")
 
-    # Variables
-    @property
-    def variables(self):
-        return self._variables
-    @variables.setter
-    def variables(self, v):
-        self._variables = v
+        try :
+            return self.variables[0]
+        except :
+            print("Nothing to return")
+            return 0
 
-    # Operations
-    @property
-    def operations(self):
-        return self._operations
-    @operations.setter
-    def operations(self, o):
-        self._operations = o
-
-    # Parenthesis
-    @property
-    def parenthesis(self):
-        return self._parenthesis
-    @parenthesis.setter
-    def parenthesis(self, p):
-        self._parenthesis = p
-
-    def calculate(self, l, r, op):
+        '''
+        print(f'\nCalculating {l}{op}{r}...\n        self.variables: {self.variables}\n        self.operations: {self.operations}')
+        
         if op == '*':
-            return(l*r)
-        if op == '/':
-            return(l/r)
-        if op == '+':
-            return(l+r)
-        if op == '-':
-            return(l-r)
+            return l*r
+        elif op == '/':
+            return l/r
+        elif op == '+':
+            return l+r
+        elif op == '-':
+            return l-r
+        elif op == '':
+            for o in self.operations:
+                order = {}
+                order[o] = self.operators[self.operations[o]]
+
+        while len(order) > 0 :
+            for e in order.copy() :
+                if order[e] == 1:
+                    _ = order.pop(e)
+                    self.variables[e] = self.calculate(self.variables[e], self.variables.pop(e+1), self.operations.pop(e))
+
+            for e in order.copy() :
+                if order[e] == 2 :
+                    _ = order.pop(e)
+                    self.variables[e] = self.calculate(self.variables[e], self.variables.pop(e+1), self.operations.pop(e))
+        return result
+        '''
+    '''                                                                                 METHODS                                                                                     '''
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-window = Tk()
-window.title("Hijueputa calculator")
-
-mainframe = ttk.Frame(window, padding="5 3 12 12")
-mainframe.grid(column=4, row=4, sticky=(N, W, E, S))
-window.columnconfigure(4, weight=1)
-window.rowconfigure(4, weight=1)
-
-mult_button = ttk.Button(window,text='*')
-
-
-calculation = StringVar()
-calculation_entry = ttk.Entry(mainframe, width=30, textvariable=calculation)
-calculation_entry.grid(column=3, row=3, sticky=(N, S))
-
-window.mainloop()
-'''
