@@ -10,48 +10,42 @@ class Calculator:
             }
     
     def __init__(self):
-        self.expression     =   ""
+        self._expression     =   ""
         self.variables      =   []
         self.operations     =   []
         self.parenthesis    =   [0, 0]
 
         while self.expression == "" :
-            try :
-                self.expression = input("\n\n\nEnter the operation: ")
+            try : self.expression = input("\n\n\nEnter the operation: ")
             except KeyboardInterrupt :
                 print("Keyboard interrupt")
                 exit()
-            except : print("Looks like the setter failed, thus the parse")
 
-        #print(f"        DEBUG - 26 - init - Expression has been evaluated correct. We move forward met the calculations.")
-        print(f"\r\r{self}")
-
+        print(self)
         self.__init__()
 
     def __str__(self) :
-        try :   return self.expression + " = " +str(self.calculate())
-        except : return ""
+        try :                      return f"                     {self.expression} = {str(self.calculate())}"
+        except Exception as e :    return f"                     {e}"
+
+
 
     '''                                                                               ATTRIBUTES                                                                                    '''
     @property   # Expression
     def expression(self) : return self._expression
     @expression.setter
     def expression(self, expr) :
-        try :
-            self.parse(expr)
-            #print(f"        DEBUG - 42 - expression setter - 'try : parse()' successful")
-            if expr != "" and expr[0] in Calculator.operators_penalty : expr = "0" + expr
-            self._expression = expr
+        try :    self._expression = self.parse(expr)[3]
         except Exception as e :
-            print(f"Syntax error: {e}.\nType a new expression:")
-            self._expression = ""
+                    print(f"    Syntax error: {e}.")
+                    self._expression = ""
     '''                                                                               ATTRIBUTES                                                                                    '''
 
+    
 
     '''                                                                                 METHODS                                                                                     '''
     def parse(self, expr: str = None) :                 # Storing all variables, operations and parenthesis in order of appeareance
-        #print(f"        DEBUG - 53 - parse() - Parsing '{expr}' ...")
-        if expr == "" : return
+        if expr == "" : return self.variables, self.operations, self.parenthesis, ""
         if expr[0] in Calculator.operators_penalty : expr = "0" + expr
 
         vars    = []
@@ -61,35 +55,32 @@ class Calculator:
         o = 0   # Operator ID
 
         for c in expr :
-            #print(f"        DEBUG - 64 - parse() - Parsing character '{c}' ...")
             if c.isdigit() or c in '().' : 
-                #print(f"        DEBUG - 66 - parse() - '{c}' is digit")
                 try :           vars[v] = vars[v] + c
                 except:         vars.append(c)
                 if c == '(' :   pars[0] += 1
                 if c == ')' :
                     pars[1] += 1
-                    if pars[1] > pars[0] : raise Exception("Missing opening parenthesis '('")
+                    if pars[1] > pars[0] : raise Exception(f"Missing opening parenthesis '('")
             elif c in Calculator.operators_penalty :
                 if pars[0] > pars[1] : vars[v] = vars[v] + c
                 else:
                     ops.append(c)
                     o +=1
                     v +=1
-            else :  raise Exception(f"Character {c} is not recognized as a mathematical expression (could be due to this calculator's limitations). Please double check and, if correct, lower your standards.")
+            else :  raise Exception(f"Character '{c}' is not recognized by this measly calculator. Please double check and, if correct, lower your standards..")
 
         # Error checking
-        if pars[0] > pars[1] : raise Exception("Missing closing parenthesis ')'")
-        if not (0 < len(vars) == len(ops)+1) : raise Exception("Missing operator or operand")
+        if pars[0] > pars[1] :             raise Exception("Missing closing parenthesis ')'")
+        if not (len(vars) == len(ops)+1) : raise Exception("Operator without operand")
 
         # Save parsed expresion as instance variables (only when it's the main expression, so that recursion won't overwrite the main epxression parsed)
         if self.expression == "" :
-            #print(f"        DEBUG - 87 - parse() - self.expression == '' --> '{expr}'")
             self.variables = vars
             self.operations = ops
             self.parenthesis = pars
 
-        return vars, ops, pars
+        return vars, ops, pars, expr
 
     def operate(self, variables: list, operators: list, id: int) :
         match operators.pop(id) :
@@ -97,13 +88,12 @@ class Calculator:
             case "-" :  variables[id] -= variables.pop(id+1)
             case "*" :  variables[id] *= variables.pop(id+1)
             case "/" :
-                try :   variables[id] /= variables.pop(id+1)#
-                except : raise Exception(f"Dividing by 0 is not allowed in mathematics.")
-            case _ : raise Exception(f"Operator '{operators[id]}' not recognized by this measly calculator.")
+                try :                      variables[id] /= variables.pop(id+1)#
+                except ZeroDivisionError : raise Exception(f"Dividing by 0 is not allowed in mathematics.")
 
     def calculate(self, varsopspars : tuple = None) :
-        if varsopspars == None : varsopspars = (self.variables, self.operations, self.parenthesis)
-        vars, ops, pars = varsopspars
+        if varsopspars == None : varsopspars = (self.variables, self.operations, self.parenthesis, self.expression)
+        vars, ops, pars, expr = varsopspars
 
         # Convert stored variables to float
         for i in range(len(vars)) :
@@ -116,19 +106,16 @@ class Calculator:
             first = (99, 99) # first = (operator, penalty)
             for i in reversed(range(len(ops))) :    # Check operator penalty and update 'first' recursively, from right to left (as the lefmost item is the first by default)
                 penalty = Calculator.operators_penalty[ops[i]]
-                if penalty <= first[1] :
-                    first = (i, penalty)
+                if penalty <= first[1] : first = (i, penalty)
             i = first[0]
             #print(f"        DEBUG - 122 - calculate() - vars = '{vars}' - ops = '{ops}' - id = '{i}'")
             try : self.operate(vars, ops, i)
-            except Exception as e :
-                print(f"Mathematical error: {e}")
-                raise Exception
+            except Exception as e : raise Exception (f"Mathematical error: {e}")
 
-        try :   return vars[0]
-        except :
-            print("Nothing to return")
-            return 0
+        if vars[0].is_integer() : vars[0] = int(vars[0])
+
+        try :       return vars[0]
+        except :    return 0
     '''                                                                                 METHODS                                                                                     '''
 
 
