@@ -116,7 +116,7 @@ class Calculator:
             first = (99, 99) # first = (operator, penalty)
             for i in reversed(range(len(ops))) :    # Check operator penalty and update 'first' recursively, from right to left (as the lefmost item is the first by default)
                 penalty = Calculator.operators_penalty[ops[i]]
-                if penalty < first[1] :
+                if penalty <= first[1] :
                     first = (i, penalty)
             i = first[0]
             #print(f"        DEBUG - 122 - calculate() - vars = '{vars}' - ops = '{ops}' - id = '{i}'")
