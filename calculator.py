@@ -1,7 +1,7 @@
 def main():
     calc = Calculator()
 
-class Calculator:
+class Calculator :
     operators_penalty = {
             '*' : 1,
             '/' : 1,
@@ -9,7 +9,7 @@ class Calculator:
             '-' : 2
             }
     
-    def __init__(self):
+    def __init__(self) :
         self.variables      =   []
         self.operations     =   []
         self.parenthesis    =   [0, 0]
@@ -35,16 +35,13 @@ class Calculator:
     def expression(self) : return self._expression
     @expression.setter
     def expression(self, expr) :
-        try :    self._expression = self.parse(expr)[3]
-        except Exception as e :
-                    print(f"    Syntax error: {e}.")
-                    self._expression = ""
+        try :                   self._expression = self.parse(expr)[3]
+        except Exception as e : print(f"    Syntax error: {e}.")
     '''                                                                               ATTRIBUTES                                                                                    '''
 
-    
 
     '''                                                                                 METHODS                                                                                     '''
-    def parse(self, expr: str = None) :                 # Storing all variables, operations and parenthesis in order of appeareance
+    def parse(self, expr: str = None) :                 # Storing all variables, operations and parenthesized variables in order of appeareance
         if expr == "" : return self.variables, self.operations, self.parenthesis, ""
         if expr[0] in Calculator.operators_penalty : expr = "0" + expr
 
@@ -68,7 +65,7 @@ class Calculator:
                     ops.append(c)
                     o +=1
                     v +=1
-            else :  raise Exception(f"Character '{c}' is not recognized by this measly calculator. Please double check and, if correct, lower your standards..")
+            else : raise Exception(f"Character '{c}' is not recognized by this measly calculator. Please double check and, if correct, lower your standards..")
 
         # Error checking
         if pars[0] > pars[1] :             raise Exception("Missing closing parenthesis ')'")
@@ -98,9 +95,7 @@ class Calculator:
         # Convert stored variables to float
         for i in range(len(vars)) :
             try :   vars[i] = float(vars[i])
-            except:
-                #print(f"        DEBUG - 112 - calculate() - Cannot convert variable '{vars[i]}' to float.\nNow we recurse: {vars[i]} -->  {vars[i][1:len(vars[i])-1]}")
-                vars[i] = self.calculate(self.parse(vars[i][1:len(vars[i])-1]))   # Substitute the variable for the result of its calculation
+            except: vars[i] = self.calculate(self.parse(vars[i][1:len(vars[i])-1]))   # Substitute parenthesized variable for the result of its calculation
 
         while len(vars) > 1 :
             first = (99, 99) # first = (operator, penalty)
@@ -108,14 +103,12 @@ class Calculator:
                 penalty = Calculator.operators_penalty[ops[i]]
                 if penalty <= first[1] : first = (i, penalty)
             i = first[0]
-            #print(f"        DEBUG - 122 - calculate() - vars = '{vars}' - ops = '{ops}' - id = '{i}'")
-            try : self.operate(vars, ops, i)
+            try :                   self.operate(vars, ops, i)
             except Exception as e : raise Exception (f"Mathematical error: {e}")
 
         if vars[0].is_integer() : vars[0] = int(vars[0])
-
-        try :       return vars[0]
-        except :    return 0
+        try :    return vars[0]
+        except : raise Exception (f"Something very wrong here, no 'vars[0]'. Line 113")
     '''                                                                                 METHODS                                                                                     '''
 
 
