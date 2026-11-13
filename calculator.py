@@ -10,10 +10,10 @@ class Calculator:
             }
     
     def __init__(self):
-        self._expression     =   ""
         self.variables      =   []
         self.operations     =   []
         self.parenthesis    =   [0, 0]
+        self.expression     =   ""
 
         while self.expression == "" :
             try : self.expression = input("\n\n\nEnter the operation: ")
